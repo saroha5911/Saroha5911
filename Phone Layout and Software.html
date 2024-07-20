@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Layout and Software</title>
+    <style>
+        /* Basic styling for the phone layout */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .phone {
+            width: 300px;
+            height: 600px;
+            border: 16px solid #333;
+            border-radius: 36px;
+            padding: 20px;
+            background-color: #000;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .screen {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .status-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            align-items: center;
+            font-size: 14px;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .button {
+            width: 200px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #00FFFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button-secondary {
+            background-color: #00FF00;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div class="status-bar">
+                <span id="time">10:00 AM</span>
+                <span id="battery-percentage">Battery: 100%</span>
+            </div>
+            <div class="content" id="home-screen">
+                <button class="button" onclick="showCaesarCipher()">Caesar Cipher</button>
+                <button class="button button-secondary" onclick="showFibonacci()">Fibonacci</button>
+            </div>
+            <div class="content hidden" id="caesar-cipher-screen">
+                <h2>Caesar Cipher</h2>
+                <input type="text" id="cipher-text" placeholder="Enter message">
+                <input type="number" id="cipher-shift" placeholder="Enter shift value" style="width: 60px;">
+                <button class="button" onclick="encryptMessage()">Encrypt</button>
+                <p id="cipher-result"></p>
+                <button class="button button-secondary" onclick="goHome()">Back</button>
+            </div>
+            <div class="content hidden" id="fibonacci-screen">
+                <h2>Fibonacci Sequence</h2>
+                <input type="number" id="fib-count" placeholder="Enter count" style="width: 60px;">
+                <button class="button" onclick="generateFibonacci()">Generate</button>
+                <p id="fib-result"></p>
+                <button class="button button-secondary" onclick="goHome()">Back</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // JavaScript for interaction
+
+        // Show Caesar Cipher screen
+        function showCaesarCipher() {
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('caesar-cipher-screen').classList.remove('hidden');
+        }
+
+        // Show Fibonacci screen
+        function showFibonacci() {
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('fibonacci-screen').classList.remove('hidden');
+        }
+
+        // Go back to home screen
+        function goHome() {
+            document.getElementById('home-screen').classList.remove('hidden');
+            document.getElementById('caesar-cipher-screen').classList.add('hidden');
+            document.getElementById('fibonacci-screen').classList.add('hidden');
+        }
+
+        // Caesar Cipher encryption
+        function encryptMessage() {
+            const text = document.getElementById('cipher-text').value;
+            const shift = parseInt(document.getElementById('cipher-shift').value) || 0;
+            const encrypted = caesarCipher(text, shift);
+            document.getElementById('cipher-result').innerText = `Encrypted Message: ${encrypted}`;
+        }
+
+        function caesarCipher(text, shift) {
+            let encrypted = "";
+            for (let char of text) {
+                if (char.match(/[a-zA-Z]/)) {
+                    const code = char.charCodeAt(0);
+                    const base = code < 97 ? 65 : 97;
+                    encrypted += String.fromCharCode(((code - base + shift) % 26) + base);
+                } else {
+                    encrypted += char;
+                }
+            }
+            return encrypted;
+        }
+
+        // Generate Fibonacci sequence
+        function generateFibonacci() {
+            const count = parseInt(document.getElementById('fib-count').value) || 0;
+            const sequence = fibonacci(count);
+            document.getElementById('fib-result').innerText = `Sequence: ${sequence.join(', ')}`;
+        }
+
+        function fibonacci(n) {
+            const sequence = [0, 1];
+            while (sequence.length < n) {
+                sequence.push(sequence[sequence.length - 1] + sequence[sequence.length - 2]);
+            }
+            return sequence.slice(0, n);
+        }
+
+        // Update the time in the status bar every second
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const formattedTime = `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+            document.getElementById('time').innerText = formattedTime;
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call to set the time immediately
+
+        // Update the battery percentage in the status bar
+        function updateBatteryPercentage() {
+            navigator.getBattery().then(battery => {
+                // Set the initial battery percentage
+                document.getElementById('battery-percentage').innerText = `Battery: ${(battery.level * 100).toFixed(0)}%`;
+                
+                // Update the battery percentage when it changes
+                battery.onlevelchange = () => {
+                    document.getElementById('battery-percentage').innerText = `Battery: ${(battery.level * 100).toFixed(0)}%`;
+                };
+            });
+        }
+
+        updateBatteryPercentage(); // Call the function to set and update the battery percentage
+    </script>
+</body>
+</html>
